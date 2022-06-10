@@ -6,11 +6,11 @@ DocMeta.setdocmeta!(mintsML, :DocTestSetup, :(using mintsML); recursive=true)
 makedocs(;
     modules=[mintsML],
     authors="John Waczak",
-    repo="https://github.com/john-waczak/mintsML.jl/blob/{commit}{path}#{line}",
+    repo="https://github.com/mi3nts/mintsML.jl/blob/{commit}{path}#{line}",
     sitename="mintsML.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://john-waczak.github.io/mintsML.jl",
+        canonical="https://mi3nts.github.io/mintsML.jl",
         assets=String[],
     ),
     pages=[
@@ -19,6 +19,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/john-waczak/mintsML.jl",
+    repo="github.com/mi3nts/mintsML.jl",
     devbranch="main",
 )

@@ -4,7 +4,7 @@ CurrentModule = mintsML
 
 # mintsML
 
-Documentation for [mintsML](https://github.com/john-waczak/mintsML.jl).
+Documentation for [mintsML](https://github.com/mi3nts/mintsML.jl).
 
 ```@index
 ```
