@@ -22,16 +22,21 @@ z = target_func.(x,y)
 Xtrain = X[:, 1:1500];
 Ytrain = z[1:1500]';
 
-Xtest = X[:, 1501:end];
-Ytest = z[1501:end]';
+Xcal = X[:, 1501:1750];
+Ycal = z[1501:1750]';
+
+Xtest = X[:, 1751:end];
+Ytest = z[1751:end]';
 
 
 
 p = plot(Xtrain[1,:], Xtrain[2,:], Ytrain', seriestype = :scatter, color=:blue, ms = 2,label="train", camera=(60, 25), xlabel="x", ylabel="y", zlabel="f(x,y)")
+plot!(p, Xcal[1,:], Xcal[2,:], Ycal', seriestype = :scatter, color=:lightgreen, ms=2, label="calibration")
 plot!(p, Xtest[1,:], Xtest[2,:], Ytest', seriestype = :scatter, color=:gray, ms=2, label="test")
 
 display(p)
 
+savefig("figures/dataset.svg")
 
 # create the NN model
 
@@ -67,6 +72,9 @@ plot!(ys, L_95, linestyle=:dash, color=:darkblue, label=L"\epsilon=0.95")
 xlabel!(L"y")
 ylabel!(L"\ell_\epsilon")
 title!(L"Pinball Loss with $\hat y = 0$")
+
+
+savefig("figures/pinball.svg")
 
 α = 0.10
 # now we need to code this up
@@ -119,7 +127,7 @@ Penalty(Xtrain)
 # define total loss
 ΣLoss(X,y) = Loss(X,y) + 0.5*Penalty(X)
 # check that it works
-LossTot(Xtrain, Ytrain')
+ΣLoss(Xtrain, Ytrain')
 
 
 # set up optimizer
@@ -137,7 +145,7 @@ end
 # construct batches if desired
 data = Flux.DataLoader((Xtrain, Ytrain'), shuffle=true, batchsize=32)
 
-n_epochs = 100
+n_epochs = 50
 
 # Flux.train!(Loss, Flux.params(model), [(Xtrain, Ytrain')], optimizer)
 Flux.@epochs n_epochs Flux.train!(ΣLoss, Flux.params(model), data, optimizer, cb=cb)
@@ -160,6 +168,43 @@ plot!(Ytest', preds_test, seriestype=:scatter, ms=2, msw=0, alpha=0.7, color=:li
 P1 = plot(p1, p2, layout=(1,2))
 
 
+# get the quartile correction
+function q̂(X,y, α)
+    # 1. compute non-conformity scores S(x,y)
+    Ypred = model(X)
+    q_low = @view Ypred[1,:]
+    q_high = @view Ypred[3,:]
+
+    Δlow = q_low .- y'
+    Δhigh = y' .- q_high
+
+    s = [maximum([Δlow[i], Δhigh[i]]) for i ∈ 1:size(y,2)]
+
+    n = size(y, 2)
+    return quantile(s, ceil((n+1)*(1-α))/n )
+end
+
+
+q = q̂(Xcal, Ycal, α)
+
+
+function ICP(X,q̂)
+    Ypred = model(X)
+    ŷ_low = Ypred[1,:]'
+    ŷ_high = Ypred[3,:]'
+
+    ci_low = ŷ_low .- q̂
+    ci_high = ŷ_high .- q̂
+
+    return vcat(ci_low, ci_high)
+end
+
+
+# test it out!
+ICP(Xtest, q)
+
+
+
 # let's test it out on one slice
 x = -1:0.1:1
 y = zeros(size(x))
@@ -169,12 +214,20 @@ Xtry = vcat(x',y')
 z_true = target_func.(x,y)
 
 Z_model = model(Xtry)
+ICP_model = ICP(Xtry, q)
 
-p3 = plot(x, Z_model[1,:], fillrange = Z_model[3,:] , fillalpha = 0.35, color=nothing, fillcolor=:gray, label = "90% Confidence band")
+
+p3 = plot(x, ICP_model[1,:], fillrange= ICP_model[2,:], fillalpha=0.75, color=nothing, fillcolor=:blue, label = "90% ICP")
+plot!(x, Z_model[1,:], fillrange = Z_model[3,:] , fillalpha = 0.75, color=nothing, fillcolor=:gray, label = "90% Confidence band")
 xlabel!("x")
 ylabel!("z")
 title!("Example Prediction")
 plot!(x, Z_model[2,:], color=:blue, label="prediction")
 scatter!(x, z_true, color=:red, ms=3, label="True Value", legend=:bottomright)
 
-plot(P1, p3, layout=(2,1))
+p4 = plot(P1, p3, layout=(2,1))
+
+
+savefig("figures/ICP_res.svg")
+
+display(p4)
