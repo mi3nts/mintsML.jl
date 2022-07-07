@@ -9,6 +9,6 @@
 - [Plot Recipes Tutorial](https://daschw.github.io/recipes/) 
 
 # Conformal Prediction Papers 
-- [Quantile Regressor NN[(https://arxiv.org/pdf/1909.12122.pdf)
+- [Quantile Regressor NN](https://arxiv.org/pdf/1909.12122.pdf)
 - [Conformal Prediction 1](https://arxiv.org/pdf/2206.11810.pdf)
 - [Conformal Prediction 2](https://arxiv.org/pdf/2107.07511.pdf)
