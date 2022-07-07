@@ -77,17 +77,17 @@ title!(L"Pinball Loss with $\hat y = 0$")
 # now we need to code this up
 function ℓ_1(X,y)
     ŷ = model(X)[1,:]
-    return ℓ_ϵ(y, ŷ, α/2)
+    return sum(ℓ_ϵ(y, ŷ, α/2))
 end
 
 function ℓ_2(X,y)
     ŷ = model(X)[2,:]
-    return ℓ_ϵ(y, ŷ, 0.5)
+    return sum(ℓ_ϵ(y, ŷ, 0.5))
 end
 
 function ℓ_3(X,y)
     ŷ = model(X)[3,:]
-    return ℓ_ϵ(y, ŷ, 1.0 - α/2)
+    return sum(ℓ_ϵ(y, ŷ, 1.0 - α/2))
 end
 
 ℓ_1(Xtrain[:, 1:10], Ytrain[1:10])
@@ -100,4 +100,26 @@ end
 
 
 Loss(Xtrain[:, 1:10], Ytrain[1:10])
+
+
+# set up optimizer
+optimizer = ADAM()
+
+
+
+
+training_loss = Float64[]
+epochs = Int64[]
+
+
+for epoch in 1:10
+	  Flux.train!(Loss, params(model), zip(Xtrain, Ytrain), optimizer)
+
+	  if epoch % 10 == 0
+	      # we record our training loss
+		    push!(epochs, epoch)
+		    push!(training_loss, Loss(Xtrain, Ytrain))
+	  end
+end
+
 
