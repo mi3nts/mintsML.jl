@@ -2,6 +2,8 @@ using mintsML
 using Statistics
 using Plots, StatsPlots
 using CSV, DataFrames
+using ProgressMeter
+
 
 # set the plot theme using our custom theme
 add_mints_theme()
@@ -96,7 +98,6 @@ function make_hist_plots(dfs, target, outpath)
     savefig(joinpath(outpath, String(target), "marginalhist.png"))
 end
 
-make_hist_plots(dfs, :CDOM, outpath)
 
 
 
@@ -158,7 +159,6 @@ function spectra_by_target(dfs, target, outpath)
     end
 end
 
-spectra_by_target(dfs, :CDOM, outpath)
 
 
 # ---------------------------------------------------------
@@ -178,13 +178,23 @@ function make_corr_plots(dfs, outpath)
     end
 end
 
-make_corr_plots(dfs, outpath)
 
 
 # ---------------------------------------------------------
-
 # let's loop through each of the target variables and generate some statistics
-# for target ∈ targets_vars
-#     continue
-# end
+@showprogress for target ∈ targets_vars
+    try
+        make_hist_plots(dfs, target, outpath)
+    catch e
+        println(e)
+    end
+
+    try
+        spectra_by_target(dfs, target, outpath)
+    catch e
+        println(e)
+    end
+
+end
+make_corr_plots(dfs, outpath)
 
