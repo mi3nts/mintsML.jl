@@ -1,5 +1,5 @@
 """
-    makeDatasets(datapath::String, target::Symbol, p::Float64)
+    makeDatasets(datapath::String, target::Symbol)
 
 Given a path to the TargetsAndFeatures.csv and a desired target variable. Return dataframes with a stratified split with percentage `p` as the training set.
 """
@@ -27,9 +27,6 @@ function makeDatasets(datapath::String, target::Symbol, p::Float64)
     # now we further split into targets and features
     y, X = unpack(df, ==(target), col -> !(col ∈ ignored_for_input))
     ytest, Xtest = unpack(df_test, ==(target), col -> !(col ∈ ignored_for_input))
-    size(y)
-    size(X)
-
 
     # if there's a third column in the targetsDict, set everything below it to 0.0
     if length(targetsDict[target]) == 3
@@ -43,9 +40,8 @@ end
 
 
 
-# assume default of 0.9 for p
-function makeDatasets(datapath::String, target::Symbol)
-    makeDatasets(datapath, target, 0.9)
-end
+
+
+
 
 
