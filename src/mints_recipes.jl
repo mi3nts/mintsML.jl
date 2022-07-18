@@ -1,6 +1,6 @@
 using LaTeXStrings
 using Statistics
-using StatsPlots: density
+using StatsPlots: density, qqplot
 using DataFrames
 import KernelDensity
 
@@ -240,4 +240,44 @@ end
 
 
 
+# since we're not really doing anything special just make this a normal function
+"""
+    qunatilequantile(y, ŷ, ytest, ŷtest; kwargs...)
+
+Create a quantile-qunatile plot of training and testing data.
+"""
+function quantilequantile(y, ŷ, ytest, ŷtest; kw...)
+    # compute min/max for setting plot lims
+    minval = minimum(vcat(y, ŷ, ytest, ŷtest))
+    maxval = maximum(vcat(y, ŷ, ytest, ŷtest))
+
+    # add a fudge factor to bounds to make sure we don't cut off any points
+    δ = 0.2*(maxval - minval)
+    minval = minval - 0.1*δ
+    maxval = maxval + 0.1*δ
+
+    p = qqplot(y,ŷ;
+               xlims=(minval,maxval),
+               ylims=(minval,maxval),
+               xlabel="Truth",
+               ylabel="Prediction",
+               msw=0,
+               ms=3,
+               alpha=0.75,
+               label="Training",
+               kw...,
+               )
+
+    qqplot!(p,
+            ytest,ŷtest;
+            color = mints_palette[2],
+            msw = 0,
+            ms = 3,
+            alpha = 0.75,
+            label = "Testing",
+            kw...,
+            )
+    return p
+
+end
 

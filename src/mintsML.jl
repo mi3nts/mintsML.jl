@@ -11,7 +11,7 @@ include("utils.jl")
 export add_mints_theme
 export makeDatasets
 export r²
-
+export quantilequantile
 
 
 end
