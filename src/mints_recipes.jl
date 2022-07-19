@@ -150,7 +150,7 @@ end
         ms --> 3
         alpha --> 0.75
         color --> mints_palette[1]
-        label := L"training $r^2 =$ %$(round(r2_train, digits=4))"
+        label := L"training $R^2 =$ %$(round(r2_train, digits=4))"
 
         y, ŷ
     end
@@ -164,7 +164,7 @@ end
         ms --> 3
         alpha --> 0.75
         color --> mints_palette[2]
-        label := L"testing  $r^2 =$ %$(round(r2_test, digits=4))"
+        label := L"testing  $R^2 =$ %$(round(r2_test, digits=4))"
 
         ytest, ŷtest
     end
@@ -176,7 +176,6 @@ end
     ticks := nothing
     xguide := ""
     yguide := ""
-
     @series begin
         seriestype := :density
         subplot := 1
@@ -275,9 +274,59 @@ function quantilequantile(y, ŷ, ytest, ŷtest; kw...)
             ms = 3,
             alpha = 0.75,
             label = "Testing",
+#            legend=:topleft,
+            legend = :outertopright,
             kw...,
             )
     return p
 
 end
+
+
+
+
+
+@userplot RankImportances
+
+@recipe function f(inputs::RankImportances;)
+    """
+        Assume you've been given a list of sorted features and their relative importances
+    """
+    feature_names = inputs.args[1]
+    rel_importance = inputs.args[2]
+
+    # first, we want to sort everyting
+
+    idx = sortperm(rel_importance, rev=true)
+    feature_names = feature_names[idx]
+    rel_improtance = rel_importance[idx]
+
+    # generate color palette and vector of colors for each bar
+    p = palette([mints_palette[2], mints_palette[1]], 11)  # i.e. from 0.0:0.1:1.0
+    colors = [p[Int(10*round(imp,digits=1))+1] for imp ∈ rel_importance]
+
+    # generate the labels for each bar
+    labels = (0.5:1:size(rel_importance,1)+1, feature_names)
+
+    @series begin
+        seriestype := :bar
+        permute := (:y, :x)
+        color := colors
+        ylims --> (-0.01, 1.01)
+        xflip --> true
+        xticks --> labels
+        legend --> false
+        grid := :none
+        minorgrid := :none
+        tick_direction := :none
+        minorticks := false
+        framestyle := :box
+        label := ""
+        ylabel --> "relative mean |shap efect|"
+
+        feature_names, rel_importance
+    end
+end
+
+
 

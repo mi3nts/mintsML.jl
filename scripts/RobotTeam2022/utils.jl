@@ -20,7 +20,7 @@ function makeDatasets(datapath::String, target::Symbol, p::Float64)
     # split into dev set and holdout
     df, df_test = partition(data,
                             p,  # save 10% for inter-model comparisons
-                            stratify = data[!,target], # make sure we maintain target distribution
+#                            stratify = data[!,target], # make sure we maintain target distribution
                             rng=42  # set the seed for reproducability
                             )
 
