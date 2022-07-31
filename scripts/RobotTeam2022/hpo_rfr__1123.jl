@@ -3,6 +3,8 @@ using MLJ
 using Plots, StatsPlots
 using DataFrames, CSV
 using ShapML
+using ProgressMeter
+
 
 
 # set the plotting theme
@@ -26,31 +28,50 @@ isdir(outpath)
 
 
 # try out functions
-
-
-# -------------- demo first for CDOM -------------------
-
-target = :CDOM
-(y, X), (ytest, Xtest) = makeDatasets(datapath, target, 0.85)
-
-size(X)
-size(Xtest)
-
-schema(X)
-
-# load a model and check its type requirements
 RFR = @load RandomForestRegressor pkg=DecisionTree
 
-plotattr("margins")
 
-explore_model("RandomForestRegressor",
-              RFR,
-              :CDOM,
-              targetsDict[:CDOM][2],
-              targetsDict[:CDOM][1],
-              X,
-              y,
-              Xtest,
-              ytest,
-              outpath,
-              )
+
+@showprogress for (target, info) ∈ targetsDict
+    (y, X), (ytest, Xtest) = makeDatasets(datapath, target, 0.85)
+    explore_model("RandomForestRegressor",
+                  RFR,
+                  target,
+                  info[2],
+                  info[1],
+                  X,
+                  y,
+                  Xtest,
+                  ytest,
+                  outpath,
+                  )
+
+    GC.gc()
+end
+
+
+
+
+# target = :CDOM
+# (y, X), (ytest, Xtest) = makeDatasets(datapath, target, 0.85)
+
+# size(X)
+# size(Xtest)
+
+# schema(X)
+
+# # load a model and check its type requirements
+
+# plotattr("margins")
+
+# explore_model("RandomForestRegressor",
+#               RFR,
+#               :CDOM,
+#               targetsDict[:CDOM][2],
+#               targetsDict[:CDOM][1],
+#               X,
+#               y,
+#               Xtest,
+#               ytest,
+#               outpath,
+#               )
